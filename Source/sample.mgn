@@ -1,0 +1,21 @@
+<html>
+	<head>
+		<title>#{BlogTitle} - Megan Template Engine</title>
+	</head>
+	<body>
+		<h1>#{BlogTitle}</h1>
+		<h3>#{BlogOwner}</h3>
+		<hr/>
+		{{Article{
+			<h2>${ArticleTitle}</h2>
+			<p>${Article}</p>
+			<h4>Comments:</h4>
+			{{Comment{
+				<p>
+					<b>${Sender}</b> said: ${Comment}
+				</p>
+			}}Comment}
+			<hr/>
+		}}Article}
+	</body>
+</html>
