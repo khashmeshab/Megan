@@ -1,6 +1,10 @@
 <html>
 	<head>
 		<title>#{BlogTitle} - Megan Template Engine</title>
+		<link rel="StyleSheet" href="~{style-dynamic.css}" type="text/css" media="screen">
+		<style>
+			@{style-embed.css}
+		</style>
 	</head>
 	<body>
 		<h1>#{BlogTitle}</h1>
@@ -15,6 +19,9 @@
 					<b>${Sender}</b> said: ${Comment}
 				</p>
 			}}Comment}
+			<h4>Comments in an IFRAME:</h4>
+			<iframe src="~{dynamic-iframe.html}"></iframe><br/>
+			<a href="~{comments.csv}">[Download all comments as a CSV file]</a>
 			<hr/>
 		}}Article}
 	</body>
