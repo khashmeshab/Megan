@@ -25,7 +25,7 @@
 	ini_set('display_errors','Off');
 	
 	session_start();
-	
+
 	// 2. If this script is called directly, send the processed included file to the browser
 	if($_SERVER['SCRIPT_FILENAME']==__FILE__ && isset($_GET['MeganID'])) {
 		header('Content-Disposition: inline; filename='.$_SESSION['Megan'][$_GET['MeganID']]['Name']);
@@ -48,12 +48,12 @@
 			$this->template_file=$template_file;
 			
 			// Calculate the URL of Megan.php script to use in dynamic includes
-			$temp=str_replace($_SERVER['SCRIPT_NAME'],'',$_SERVER['SCRIPT_FILENAME']);
-			$temp=str_replace($temp,$_SERVER['HTTP_HOST'].':'.$_SERVER['SERVER_PORT'],__FILE__);
+			$www_root_dir=str_replace($_SERVER['SCRIPT_NAME'],'',$_SERVER['SCRIPT_FILENAME']);
+			$megan_script=str_replace($www_root_dir,'',__FILE__);
 			if(isset($_SERVER['HTTPS']))
-				$this->megan_url='https://'.$temp;
+				$this->megan_url='https://'.$_SERVER['HTTP_HOST'].':'.$_SERVER['SERVER_PORT'].'/'.$megan_script;
 			else
-				$this->megan_url='http://'.$temp;
+				$this->megan_url='http://'.$_SERVER['HTTP_HOST'].':'.$_SERVER['SERVER_PORT'].'/'.$megan_script;
 		}
 		
 		function __set($name,$value) {
@@ -81,9 +81,8 @@
 				$template=substr($template,0,$i).file_get_contents(dirname($this->template_file).'/'.$tag).substr($template,$j+1);
 			}
 			// Replace global labels: #{label} tags
-			$i=0;
 			while(true) {
-				$i=strpos($template,'#{',$i+2);
+				$i=strpos($template,'#{');
 				if(!$i) break;
 				$j=strpos($template,'}',$i+2);
 				$tag=substr($template,$i+2,$j-$i-2);
