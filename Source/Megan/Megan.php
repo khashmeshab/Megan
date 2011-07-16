@@ -86,7 +86,8 @@
 				if(!$i) break;
 				$j=strpos($template,'}',$i+2);
 				$tag=substr($template,$i+2,$j-$i-2);
-				$template=substr($template,0,$i).$this->labels_array[$tag].substr($template,$j+1);
+				if(isset($this->labels_array[$tag]))
+					$template=substr($template,0,$i).$this->labels_array[$tag].substr($template,$j+1);
 			}
 			// Process sections: {{section{ and }}section} tags
 			while(true) {
