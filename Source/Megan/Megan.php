@@ -18,25 +18,29 @@
 	 * @license		BSD
 	 */
 	
+	// Enable or disable dynamic includes
+	define('MEGAN_ENABLE_DYNAMIC'	,true);
 	 
-	// Process direct calls to this script for dynamic includes:
-	// 1. Temporary turn off error reporting
-	$display_errors=ini_get('display_errors');
-	ini_set('display_errors','Off');
-	
-	session_start();
+	if(MEGAN_ENABLE_DYNAMIC) {
+		// Process direct calls to this script for dynamic includes:
+		// 1. Temporary turn off error reporting
+		$display_errors=ini_get('display_errors');
+		ini_set('display_errors','Off');
+		
+		session_start();
 
-	// 2. If this script is called directly, send the processed included file to the browser
-	if($_SERVER['SCRIPT_FILENAME']==__FILE__ && isset($_GET['MeganID'])) {
-		header('Content-Disposition: inline; filename='.$_SESSION['Megan'][$_GET['MeganID']]['Name']);
-		header('Content-Length: '.strlen($_SESSION['Megan'][$_GET['MeganID']]['Data']));
-		echo $_SESSION['Megan'][$_GET['MeganID']]['Data'];
-		unset($_SESSION['Megan'][$_GET['MeganID']]);
-		die();
+		// 2. If this script is called directly, send the processed included file to the browser
+		if($_SERVER['SCRIPT_FILENAME']==__FILE__ && isset($_GET['MeganID'])) {
+			header('Content-Disposition: inline; filename='.$_SESSION['Megan'][$_GET['MeganID']]['Name']);
+			header('Content-Length: '.strlen($_SESSION['Megan'][$_GET['MeganID']]['Data']));
+			echo $_SESSION['Megan'][$_GET['MeganID']]['Data'];
+			unset($_SESSION['Megan'][$_GET['MeganID']]);
+			die();
+		}
+		
+		// 3. Reset the error reporting status
+		ini_set('display_errors',$display_errors);
 	}
-	
-	// 3. Reset the error reporting status
-	ini_set('display_errors',$display_errors);
 
 	class Megan {
 		private $megan_url,
@@ -104,18 +108,20 @@
 				}
 				$template=substr($template,0,$i).$sections.substr($template,$k+strlen($tag)+3);
 			}
-			// Process dynamic includes: ~{file} tags
-			while(true) {
-				$i=strpos($template,'~{');
-				if(!$i) break;
-				if(!isset($serialize)) $serialize=serialize($this);
-				$j=strpos($template,'}',$i+2);
-				$tag=substr($template,$i+2,$j-$i-2);
-				$token=md5($serialize.$tag);
-				$path=dirname($this->template_file).'/'.$tag;
-				$_SESSION['Megan'][$token]['Name']=basename($path);
-				$_SESSION['Megan'][$token]['Data']=$this->Generate(true,file_get_contents($path));
-				$template=substr($template,0,$i).$this->megan_url.'?MeganID='.$token.substr($template,$j+1);
+			if(MEGAN_ENABLE_DYNAMIC) {
+				// Process dynamic includes: ~{file} tags
+				while(true) {
+					$i=strpos($template,'~{');
+					if(!$i) break;
+					if(!isset($serialize)) $serialize=serialize($this);
+					$j=strpos($template,'}',$i+2);
+					$tag=substr($template,$i+2,$j-$i-2);
+					$token=md5($serialize.$tag);
+					$path=dirname($this->template_file).'/'.$tag;
+					$_SESSION['Megan'][$token]['Name']=basename($path);
+					$_SESSION['Megan'][$token]['Data']=$this->Generate(true,file_get_contents($path));
+					$template=substr($template,0,$i).$this->megan_url.'?MeganID='.$token.substr($template,$j+1);
+				}
 			}
 			// Replace local labels: ${label} tags
 			while(true) {
