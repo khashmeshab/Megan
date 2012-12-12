@@ -10,11 +10,12 @@
 	 *		~{file}			Dynamic Include		Process a file and put a dynamic URL for it.
 	 * 		{{section{		Section Begin		Beginning of a section.
 	 * 		}}section}		Section End			Ending of a section.
+	 *		?{code}			PHP Code			Runs the PHP commands such as function calls.
 	 * 
 	 * @name		Megan Template Engine
 	 * @author		Masoud Gheysari M <m.gheysari@gmail.com>
 	 * @copyright 	2011 - Masoud Gheysari M
-	 * @version 	1.2.2
+	 * @version 	1.2.4
 	 * @license		BSD
 	 */
 	
@@ -130,6 +131,13 @@
 				$j=strpos($template,'}',$i+2);
 				$tag=substr($template,$i+2,$j-$i-2);
 				$template=substr($template,0,$i).$this->labels_array[$tag].substr($template,$j+1);
+			}
+			while(true) {
+				$i=strpos($template,'?{');
+				if(!$i) break;
+				$j=strpos($template,'}',$i+2);
+				$tag=substr($template,$i+2,$j-$i-2);
+				$template=substr($template,0,$i).eval($tag).substr($template,$j+1);
 			}
 			if($return)
 				return $template;
