@@ -14,7 +14,8 @@
 	 * 
 	 * @name		Megan Template Engine
 	 * @author		Masoud Gheysari M <m.gheysari@gmail.com>
-	 * @copyright 	2011 - Masoud Gheysari M
+	 * @copyright 	2013 - Masoud Gheysari M
+	 * @url			http://megan.sf.net
 	 * @version 	1.2.5
 	 * @license		BSD
 	 */
