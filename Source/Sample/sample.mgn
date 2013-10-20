@@ -3,7 +3,7 @@
 		<title>#{BlogTitle} - Megan Template Engine</title>
 		<link rel="StyleSheet" href="~{style-dynamic.css}" type="text/css" media="screen">
 		<style>
-			@{style-embed.css}
+			@{style-embed.css} /{This is a random comment here.}
 		</style>
 	</head>
 	<body>

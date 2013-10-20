@@ -11,6 +11,7 @@
 	 * 		{{section{		Section Begin		Beginning of a section.
 	 * 		}}section}		Section End			Ending of a section.
 	 *		?{code}			PHP Code			Runs the PHP commands such as function calls.
+	 *		/{comment}		Comment				Will be removed when generating the output.
 	 * 
 	 * @name		Megan Template Engine
 	 * @author		Masoud Gheysari M <m.gheysari@gmail.com>
@@ -105,28 +106,24 @@
 			if(!$template) $template=file_get_contents($this->template_file);
 			// Embed additional files: @{file} tags
 			while(true) {
-				$i=strpos($template,'@{');
-				if($i===false) break;
-				$j=strpos($template,'}',$i+2);
-				$tag=substr($template,$i+2,$j-$i-2);
+				if(!$tag=$this->detect_tag('@{','}',$template,$i,$j)) break;
 				$template=substr($template,0,$i).file_get_contents(dirname($this->template_file).'/'.$tag).substr($template,$j+1);
+			}
+			// Replace comments: /{comment} tags
+			while(true) {
+				if(!$tag=$this->detect_tag('/{','}',$template,$i,$j)) break;
+				$template=substr($template,0,$i).substr($template,$j+1);
 			}
 			// Replace global labels: #{label} tags
 			while(true) {
-				$i=strpos($template,'#{');
-				if($i===false) break;
-				$j=strpos($template,'}',$i+2);
-				$tag=substr($template,$i+2,$j-$i-2);
+				if(!$tag=$this->detect_tag('#{','}',$template,$i,$j)) break;
 				if(isset($this->labels_array[$tag]))
 					$template=substr($template,0,$i).$this->labels_array[$tag].substr($template,$j+1);
 			}
 			// Process sections: {{section{ and }}section} tags
 			while(true) {
 				$sections="";
-				$i=strpos($template,'{{');
-				if($i===false) break;
-				$j=strpos($template,'{',$i+2);
-				$tag=substr($template,$i+2,$j-$i-2);
+				if(!$tag=$this->detect_tag('{{','{',$template,$i,$j)) break;
 				$k=strpos($template,'}}'.$tag.'}',$j+2);
 				if(!$k) die("[Megan] Template Error: No closing tag for '$tag' section.");
 				$subtemplate=substr($template,$j+1,$k-$j-1);
@@ -138,11 +135,8 @@
 			if(MEGAN_ENABLE_DYNAMIC) {
 				// Process dynamic includes: ~{file} tags
 				while(true) {
-					$i=strpos($template,'~{');
-					if($i===false) break;
+					if(!$tag=$this->detect_tag('~{','}',$template,$i,$j)) break;
 					if(!isset($serialize)) $serialize=serialize($this);
-					$j=strpos($template,'}',$i+2);
-					$tag=substr($template,$i+2,$j-$i-2);
 					$token=md5($serialize.$tag);
 					$path=dirname($this->template_file).'/'.$tag;
 					$_SESSION['Megan'][$token]['Path']=$path;
@@ -152,18 +146,13 @@
 			}
 			// Replace local labels: ${label} tags
 			while(true) {
-				$i=strpos($template,'${');
-				if($i===false) break;
-				$j=strpos($template,'}',$i+2);
-				$tag=substr($template,$i+2,$j-$i-2);
+				if(!$tag=$this->detect_tag('${','}',$template,$i,$j)) break;
 				$template=substr($template,0,$i).$this->labels_array[$tag].substr($template,$j+1);
 			}
 			if(MEGAN_ENABLE_CODE) {
+				// Execute PHP codes: ?{code} tags
 				while(true) {
-					$i=strpos($template,'?{');
-					if($i===false) break;
-					$j=strpos($template,'}',$i+2);
-					$tag=substr($template,$i+2,$j-$i-2);
+					if(!$tag=$this->detect_tag('?{','}',$template,$i,$j)) break;
 					ob_start();
 					eval($tag);
 					$out=ob_get_clean();
@@ -174,6 +163,13 @@
 				return $template;
 			else
 				echo $template;
+		}
+		
+		private function detect_tag($start,$end,$template,&$i,&$j) {
+			$i=strpos($template,$start);
+			if($i===false) return false;
+			$j=strpos($template,$end,$i+2);
+			return substr($template,$i+2,$j-$i-2);
 		}
 	}
 ?>
