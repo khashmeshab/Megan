@@ -10,21 +10,22 @@
 	 *		~{file}			Dynamic Include		Process a file and put a dynamic URL for it.
 	 * 		{{section{		Section Begin		Beginning of a section.
 	 * 		}}section}		Section End			Ending of a section.
-	 *		?{code}			PHP Code			Runs the PHP commands such as function calls.
-	 *		/{comment}		Comment				Will be removed when generating the output.
+	 *		?{code}			PHP Code			Display the output of a PHP code.
+	 *		%{call}			PHP Function		Call a PHP function and display its return value. Display variables, constants, etc.
+	 *		!{comment}		Comment				Will be removed when generating the output.
 	 * 
 	 * @name		Megan Template Engine
 	 * @author		Masoud Gheysari M <m.gheysari@gmail.com>
 	 * @copyright 	2013 - Masoud Gheysari M
 	 * @url			http://megan.sf.net
-	 * @version 	1.2.5
+	 * @version 	1.2.5+
 	 * @license		BSD
 	 */
 	
 	
 	// Configuration
 	define('MEGAN_ENABLE_DYNAMIC'	,true); // Enable dynamic includes (~{file} tags)
-	define('MEGAN_ENABLE_CODE'		,true); // Enable PHP code executions (?{code} tags)
+	define('MEGAN_ENABLE_CODE'		,true); // Enable PHP code executions (?{code} and %{call} tags)
  
 	
 	// Process direct calls to this script for dynamic includes:
@@ -111,7 +112,7 @@
 			}
 			// Replace comments: /{comment} tags
 			while(true) {
-				if(!$tag=$this->detect_tag('/{','}',$template,$i,$j)) break;
+				if(!$tag=$this->detect_tag('!{','}',$template,$i,$j)) break;
 				$template=substr($template,0,$i).substr($template,$j+1);
 			}
 			// Replace global labels: #{label} tags
@@ -157,6 +158,11 @@
 					eval($tag);
 					$out=ob_get_clean();
 					$template=substr($template,0,$i).$out.substr($template,$j+1);
+				}
+				// Display PHP function return value. Display variables, constants, etc: %{call} tags
+				while(true) {
+					if(!$tag=$this->detect_tag('%{','}',$template,$i,$j)) break;
+					$template=substr($template,0,$i).eval('return '.$tag.';').substr($template,$j+1);
 				}
 			}
 			if($return)

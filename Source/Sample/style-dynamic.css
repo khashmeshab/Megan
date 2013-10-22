@@ -1,1 +1,1 @@
-* { background:#{Background}; } /{Another comment in a dynamic include.}
+* { background:#{Background}; } !{Another comment in a dynamic include.}

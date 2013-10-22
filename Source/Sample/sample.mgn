@@ -3,11 +3,11 @@
 		<title>#{BlogTitle} - Megan Template Engine</title>
 		<link rel="StyleSheet" href="~{style-dynamic.css}" type="text/css" media="screen">
 		<style>
-			@{style-embed.css} /{This is a random comment here.}
+			@{style-embed.css} !{This is a random comment here.}
 		</style>
 	</head>
 	<body>
-		<h1>?{echo strtoupper($this->BlogTitle);}</h1>
+		<h1>%{strtoupper($this->BlogTitle)}</h1>
 		<h3>#{BlogOwner}</h3>
 		<hr/>
 		{{Article{
@@ -24,8 +24,10 @@
 			<a href="~{comments.csv}">[Download all comments as a CSV file]</a>
 			<hr/>
 		}}Article}
-		Peak Memory Usage: <b>?{echo memory_get_peak_usage();}</b> Bytes.
+		Peak Memory Usage: <b>%{memory_get_peak_usage()}</b> Bytes.
 		<br/>
-		Copyright 2012 - #{BlogTitle} - <a href="~{phpinfo.html}">PHP Information</a>
+		Copyright ?{$temp=date('Y');echo $temp;} - #{BlogTitle} - <a href="~{phpinfo.html}">PHP Information</a>
+		<br/>
+		You are: <b>%{$_SERVER['REMOTE_ADDR']}</b> - I am: <b>%{$_SERVER['SERVER_ADDR']}</b>
 	</body>
 </html>

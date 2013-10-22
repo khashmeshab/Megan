@@ -1,4 +1,4 @@
 "Sender","Comment"
-{{Comment{
+{{Comment{ !{For each comment...}
 "${Sender}","${Comment}"
 }}Comment}
