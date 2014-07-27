@@ -142,9 +142,9 @@
 			// Replace global labels: #{label} tags
 			while(true) {
 				if(!$tag=$this->detect_tag('#{','}',$template,$i,$j)) break;
-				if(isset($this->labels_array[$tag])
+				if(isset($this->labels_array[$tag]))
 					$template=substr($template,0,$i).$this->labels_array[$tag].substr($template,$j+1);
-				elseif(isset($this->embed_array[$tag])
+				elseif(isset($this->embed_array[$tag]))
 					$template=str_replace('#{'.$tag.'}',$this->Generate(true,$this->embed_array[$tag],false),$template);
 				else
 					$template=substr($template,0,$i).substr($template,$j+1);
@@ -176,9 +176,9 @@
 			// Replace local labels: ${label} tags
 			while(true) {
 				if(!$tag=$this->detect_tag('${','}',$template,$i,$j)) break;
-				if(isset($this->labels_array[$tag])
+				if(isset($this->labels_array[$tag]))
 					$template=substr($template,0,$i).$this->labels_array[$tag].substr($template,$j+1);
-				elseif(isset($this->embed_array[$tag])
+				elseif(isset($this->embed_array[$tag]))
 					$template=str_replace('${'.$tag.'}',$this->Generate(true,$this->embed_array[$tag],false),$template);
 				else
 					$template=substr($template,0,$i).substr($template,$j+1);
