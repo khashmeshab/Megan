@@ -71,10 +71,16 @@
 		private $megan_url,
 			$labels_array,
 			$sections_array,
-			$template_file;
+			$embed_array,
+			$template,
+			$is_file,
+			$base_dir;
 		
-		function __construct($template_file) {
-			$this->template_file=$template_file;
+		function __construct($template=null,$base_dir=null,$is_file=true) {
+			if(!$base_dir && $is_file) $base_dir=dirname($template);
+			if($base_dir) $this->base_dir=$base_dir.'/';
+			$this->template=$template;
+			$this->is_file=$is_file;
 			
 			// Calculate the URL of Megan.php script to use in dynamic includes
 			$www_root_dir=str_replace($_SERVER['SCRIPT_NAME'],'',$_SERVER['SCRIPT_FILENAME']);
@@ -98,17 +104,35 @@
 		}
 		
 		function &NewSection($name) {
-			$megan_object=new Megan($this->template_file);
+			$megan_object=new Megan(null,$this->base_dir);
 			$this->sections_array[$name][]=$megan_object;
 			return $megan_object;
 		}
+		
+		function SetTemplate($template,$is_file=true) {
+			$this->template=$template;
+			$this->is_file=$is_file;
+		}
+		
+		function Embed($name,$value,$is_file=false) {
+			$this->embed_array[$tag]=$is_file ? file_get_contents($this->base_dir.$value) : $value;
+		}
 
-		function Generate($return=false,$template=null) {
-			if(!$template) $template=file_get_contents($this->template_file);
+		function Generate($return=false,$template=null,$is_file=false) {
+			if($template) {
+				if($is_file)
+					$template=file_get_contents($this->base_dir.$template);
+			} else {
+				if($this->is_file)
+					$template=file_get_contents($this->base_dir.$this->template);
+				else
+					$template=$this->template;
+			}
+			
 			// Embed additional files: @{file} tags
 			while(true) {
 				if(!$tag=$this->detect_tag('@{','}',$template,$i,$j)) break;
-				$template=substr($template,0,$i).file_get_contents(dirname($this->template_file).'/'.$tag).substr($template,$j+1);
+				$template=substr($template,0,$i).file_get_contents($this->base_dir.$tag).substr($template,$j+1);
 			}
 			// Replace comments: /{comment} tags
 			while(true) {
@@ -118,8 +142,12 @@
 			// Replace global labels: #{label} tags
 			while(true) {
 				if(!$tag=$this->detect_tag('#{','}',$template,$i,$j)) break;
-				if(isset($this->labels_array[$tag]))
+				if(isset($this->labels_array[$tag])
 					$template=substr($template,0,$i).$this->labels_array[$tag].substr($template,$j+1);
+				elseif(isset($this->embed_array[$tag])
+					$template=str_replace('#{'.$tag.'}',$this->Generate(true,$this->embed_array[$tag],false),$template);
+				else
+					$template=substr($template,0,$i).substr($template,$j+1);
 			}
 			// Process sections: {{section{ and }}section} tags
 			while(true) {
@@ -129,7 +157,8 @@
 				if(!$k) die("[Megan] Template Error: No closing tag for '$tag' section.");
 				$subtemplate=substr($template,$j+1,$k-$j-1);
 				foreach($this->sections_array[$tag] as $section) {
-					$sections.=$section->Generate(true,$subtemplate);
+					$section->SetTemplate($subtemplate,false);
+					$sections.=$section->Generate(true);
 				}
 				$template=substr($template,0,$i).$sections.substr($template,$k+strlen($tag)+3);
 			}
@@ -139,16 +168,20 @@
 					if(!$tag=$this->detect_tag('~{','}',$template,$i,$j)) break;
 					if(!isset($serialize)) $serialize=serialize($this);
 					$token=md5($serialize.$tag);
-					$path=dirname($this->template_file).'/'.$tag;
-					$_SESSION['Megan'][$token]['Path']=$path;
-					$_SESSION['Megan'][$token]['Data']=$this->Generate(true,file_get_contents($path));
+					$_SESSION['Megan'][$token]['Path']=$tag;
+					$_SESSION['Megan'][$token]['Data']=$this->Generate(true,$tag,true);
 					$template=substr($template,0,$i).$this->megan_url.'?MeganID='.$token.substr($template,$j+1);
 				}
 			}
 			// Replace local labels: ${label} tags
 			while(true) {
 				if(!$tag=$this->detect_tag('${','}',$template,$i,$j)) break;
-				$template=substr($template,0,$i).$this->labels_array[$tag].substr($template,$j+1);
+				if(isset($this->labels_array[$tag])
+					$template=substr($template,0,$i).$this->labels_array[$tag].substr($template,$j+1);
+				elseif(isset($this->embed_array[$tag])
+					$template=str_replace('${'.$tag.'}',$this->Generate(true,$this->embed_array[$tag],false),$template);
+				else
+					$template=substr($template,0,$i).substr($template,$j+1);
 			}
 			if(MEGAN_ENABLE_CODE) {
 				// Execute PHP codes: ?{code} tags
