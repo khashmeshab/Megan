@@ -145,7 +145,7 @@
 				if(isset($this->labels_array[$tag]))
 					$template=substr($template,0,$i).$this->labels_array[$tag].substr($template,$j+1);
 				elseif(isset($this->embed_array[$tag]))
-					$template=str_replace('#{'.$tag.'}',$this->Generate(true,$this->embed_array[$tag],false),$template);
+					$template=str_replace('#{'.$tag.'}',$this->Generate(true,$this->embed_array[$tag]),$template);
 				else
 					$template=substr($template,0,$i).substr($template,$j+1);
 			}
@@ -179,7 +179,7 @@
 				if(isset($this->labels_array[$tag]))
 					$template=substr($template,0,$i).$this->labels_array[$tag].substr($template,$j+1);
 				elseif(isset($this->embed_array[$tag]))
-					$template=str_replace('${'.$tag.'}',$this->Generate(true,$this->embed_array[$tag],false),$template);
+					$template=str_replace('${'.$tag.'}',$this->Generate(true,$this->embed_array[$tag]),$template);
 				else
 					$template=substr($template,0,$i).substr($template,$j+1);
 			}
